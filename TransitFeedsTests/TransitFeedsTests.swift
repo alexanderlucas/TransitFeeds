@@ -10,24 +10,46 @@ import XCTest
 
 class TransitFeedsTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    func testLoadFeed() {
+        let promise = expectation(description: "feed loaded successfully")
+        
+        let webService = WebService()
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+        webService.loadFeeds { (result) in
+            switch result {
+            case .success(_):
+                promise.fulfill()
+            case .failure(let error):
+                XCTFail("Error: \(error)")
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+            }
         }
+        
+        wait(for: [promise], timeout: 5)
+
+    }
+
+    func testMidpointFromZeroToOne() {
+        let bound = Bound(minLat: 0, maxLat: 1, minLon: 0, maxLon: 1)
+
+        XCTAssertEqual(bound.midpoint.latitude, 0.5, "Midpoint of [0, 1] is incorrect")
+        XCTAssertEqual(bound.midpoint.longitude, 0.5, "Midpoint of [0, 1] is incorrect")
+
+    }
+
+    func testMidpoint_latitudeFromZeroToOne_longitudeFromNegativeOneToOne() {
+        let bound = Bound(minLat: 0, maxLat: 1, minLon: -1, maxLon: 1)
+
+        XCTAssertEqual(bound.midpoint.latitude, 0.5, "Midpoint of [0, 1] is incorrect")
+        XCTAssertEqual(bound.midpoint.longitude, 0, "Midpoint of [-1, 1] is incorrect")
+    }
+
+    func testMidpoint_latitudeOne_longitudeFromZeroToOne() {
+        let bound = Bound(minLat: 1, maxLat: 1, minLon: 0, maxLon: 1)
+
+        XCTAssertEqual(bound.midpoint.latitude, 1, "Midpoint of [1, 1] is incorrect")
+        XCTAssertEqual(bound.midpoint.longitude, 0.5, "Midpoint of [0, 1] is incorrect")
+
     }
 
 }
